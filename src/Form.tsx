@@ -109,14 +109,14 @@ export default function AppForm({ initialData, mode, onSubmit, onCancel, isSubmi
   return (
     <div className="bg-white shadow-xl p-6 md:p-10 mb-8 max-w-5xl mx-auto w-full relative z-10">
       <h2 className="text-2xl md:text-3xl font-black uppercase italic mb-8 border-b-4 border-gray-500 pb-4">
-        {mode === 'edit' ? 'Modificar Registro' : (isGrupal ? 'Ingreso Trabajo Grupal' : 'Ingreso Trabajo Individual')}
+        {mode === 'edit' ? 'Modificar Registro' : (isGrupal ? 'Ingreso Maqueta/modelo Grupal' : 'Ingreso Maqueta/modelo Individual')}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-12">
         {/* Personal Details */}
         <section>
           <div className="flex items-center gap-4 mb-6">
-            <div className="h-8 w-8 bg-[#040823] text-white flex items-center justify-center font-black text-xl">1</div>
+            <div className="h-8 w-8 bg-[#4B577E] text-white flex items-center justify-center font-black text-xl">1</div>
             <h2 className="text-xl md:text-2xl font-black uppercase">Datos {isGrupal ? 'Representante' : 'Estudiante'}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -160,7 +160,7 @@ export default function AppForm({ initialData, mode, onSubmit, onCancel, isSubmi
         {isGrupal && (
           <section className="border-t-4 border-gray-500 pt-8">
             <div className="flex items-center gap-4 mb-6">
-              <div className="h-8 w-8 bg-[#040823] text-white flex items-center justify-center font-black text-xl">2</div>
+              <div className="h-8 w-8 bg-[#4B577E] text-white flex items-center justify-center font-black text-xl">2</div>
               <h2 className="text-xl md:text-2xl font-black uppercase">Otros Integrantes</h2>
             </div>
             <div className="space-y-4">
@@ -189,7 +189,7 @@ export default function AppForm({ initialData, mode, onSubmit, onCancel, isSubmi
         {/* Project Details */}
         <section className="border-t-4 border-gray-500 pt-8">
           <div className="flex items-center gap-4 mb-6">
-            <div className="h-8 w-8 bg-[#040823] text-white flex items-center justify-center font-black text-xl">{isGrupal ? '3' : '2'}</div>
+            <div className="h-8 w-8 bg-[#4B577E] text-white flex items-center justify-center font-black text-xl">{isGrupal ? '3' : '2'}</div>
             <h2 className="text-xl md:text-2xl font-black uppercase">Ficha Técnica</h2>
           </div>
           <div className="space-y-6">
@@ -221,7 +221,7 @@ export default function AppForm({ initialData, mode, onSubmit, onCancel, isSubmi
           <button type="button" onClick={onCancel} className="w-full sm:w-auto bg-white border-4 border-gray-500 text-black px-8 py-4 font-black uppercase hover:bg-gray-100 transition-colors">
             Volver
           </button>
-          <button type="submit" disabled={isSubmitting} className="w-full sm:w-auto bg-[#040823] text-white px-8 py-4 text-xl md:text-xl font-black uppercase hover:opacity-80 transition-opacity disabled:opacity-50 flex items-center justify-center border-4 border-transparent hover:border-gray-500">
+          <button type="submit" disabled={isSubmitting} className="w-full sm:w-auto bg-[#4B577E] text-white px-8 py-4 text-xl md:text-xl font-black uppercase hover:opacity-80 transition-opacity disabled:opacity-50 flex items-center justify-center border-4 border-transparent hover:border-gray-500">
             {isSubmitting ? <><Loader2 className="w-6 h-6 mr-3 animate-spin" /> PROCESANDO...</> : (mode === 'edit' ? 'Actualizar Registro' : 'Enviar Registro')}
           </button>
         </section>

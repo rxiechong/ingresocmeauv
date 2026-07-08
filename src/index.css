@@ -20,24 +20,24 @@
 
 @keyframes spinGroup {
   0%, 65% { transform: rotate(0deg); }
-  70%, 99.9% { transform: rotate(90deg); }
-  100% { transform: rotate(0deg); }
+  70%, 92% { transform: rotate(90deg); }
+  97%, 100% { transform: rotate(0deg); }
 }
 
 @keyframes stretchV {
   0%, 65% { transform: scaleY(1); opacity: 1; }
   70% { transform: scaleY(4); opacity: 0.8; }
-  85%, 90% { transform: scaleY(4); opacity: 0.1; }
-  95%, 99.9% { transform: scaleY(4); opacity: 1; }
-  100% { transform: scaleY(1); opacity: 1; }
+  80%, 85% { transform: scaleY(4); opacity: 0.1; }
+  91% { transform: scaleY(4); opacity: 1; }
+  96%, 100% { transform: scaleY(1); opacity: 1; }
 }
 
 @keyframes stretchH {
   0%, 65% { transform: scaleX(1); opacity: 1; }
   70% { transform: scaleX(4); opacity: 0.8; }
-  85%, 90% { transform: scaleX(4); opacity: 0.1; }
-  95%, 99.9% { transform: scaleX(4); opacity: 1; }
-  100% { transform: scaleX(1); opacity: 1; }
+  80%, 85% { transform: scaleX(4); opacity: 0.1; }
+  91% { transform: scaleX(4); opacity: 1; }
+  96%, 100% { transform: scaleX(1); opacity: 1; }
 }
 
 @theme {

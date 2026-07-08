@@ -12,7 +12,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Set up the database
 const dbPath = process.env.DB_PATH || path.join(process.cwd(), 'data', 'database.sqlite');
@@ -21,7 +21,23 @@ const dataDir = path.dirname(dbPath);
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
-const db = new Database(dbPath);
+let db: any;
+try {
+  db = new Database(dbPath);
+  // Test integrity check
+  db.pragma('integrity_check');
+} catch (error) {
+  console.error("Database initialization failed or file is corrupt. Recreating...", error);
+  try {
+    if (fs.existsSync(dbPath)) {
+      fs.unlinkSync(dbPath);
+    }
+    db = new Database(dbPath);
+  } catch (innerError) {
+    console.error("Failed to recreate database file. Falling back to memory database:", innerError);
+    db = new Database(':memory:');
+  }
+}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS submissions (

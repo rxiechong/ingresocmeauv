@@ -109,7 +109,7 @@ export default function Admin() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#040823] text-white px-4 py-3 font-black uppercase hover:opacity-80 transition-opacity disabled:opacity-50 border-4 border-transparent hover:border-gray-500 cursor-pointer flex justify-center items-center"
+              className="w-full bg-[#4B577E] text-white px-4 py-3 font-black uppercase hover:opacity-80 transition-opacity disabled:opacity-50 border-4 border-transparent hover:border-gray-500 cursor-pointer flex justify-center items-center"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Ingresar'}
             </button>
@@ -121,12 +121,12 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col p-4 md:p-8">
-      <header className="flex justify-between items-center bg-[#040823] text-white p-4 border-4 border-gray-500 mb-6">
+      <header className="flex justify-between items-center bg-[#4B577E] text-white p-4 border-4 border-gray-500 mb-6">
         <h1 className="text-xl md:text-2xl font-black uppercase tracking-widest">Panel de Administración</h1>
         <div className="flex gap-4">
           <a
             href="/api/submissions/export"
-            className="flex items-center gap-2 bg-white text-[#040823] px-4 py-2 font-bold uppercase hover:bg-gray-200 transition-colors border-2 border-transparent"
+            className="flex items-center gap-2 bg-white text-[#4B577E] px-4 py-2 font-bold uppercase hover:bg-gray-200 transition-colors border-2 border-transparent"
           >
             <Download className="w-4 h-4" /> Exportar CSV
           </a>

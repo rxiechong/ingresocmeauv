@@ -1,20 +1,31 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Campos Materiales - Convocatoria Estudiantil
 
-# Run and deploy your AI Studio app
+Este proyecto es una aplicación web full-stack para gestionar las inscripciones a la exposición "Campos Materiales".
 
-This contains everything you need to run your app locally.
+## Despliegue en Railway
 
-View your app in AI Studio: https://ai.studio/apps/b1a29fb8-487b-4e9a-b78a-962bc4a73749
+Para desplegar este proyecto en Railway de manera correcta, sigue estos pasos:
 
-## Run Locally
+1. **Crear el proyecto en Railway**:
+   - Conecta tu repositorio de GitHub o usa el CLI de Railway.
+   - Railway detectará automáticamente que es un proyecto Node.js.
 
-**Prerequisites:**  Node.js
+2. **Configurar el volumen persistente (Importante para SQLite)**:
+   Como la aplicación usa SQLite para almacenar los registros de inscripción, necesitas un volumen para que los datos no se borren en cada despliegue.
+   - Ve a la pestaña **Variables** en Railway.
+   - Añade una nueva variable: `DB_PATH` con el valor `/data/database.sqlite`
+   - Ve a la pestaña **Volumes**.
+   - Haz clic en **Create Volume**.
+   - Configura el **Mount Path** como `/data`.
 
+3. **Configurar las credenciales (Opcional)**:
+   - Puedes configurar `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` en las **Variables** si decides activar el envío de correos.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+4. **Desplegar**:
+   - Railway ejecutará `npm install`, luego `npm run build` y finalmente iniciará la aplicación con `npm start`.
+
+## Scripts
+
+- `npm run dev`: Inicia el servidor de desarrollo en el puerto 3000.
+- `npm run build`: Compila la aplicación de React y el servidor Express.
+- `npm start`: Inicia el servidor compilado para producción.

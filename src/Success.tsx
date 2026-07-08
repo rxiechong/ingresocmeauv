@@ -32,14 +32,14 @@ export default function Success({ code, formData, onHome }: Props) {
         ref={cardRef} 
         className="bg-white p-8 md:p-12 w-full text-center shadow-xl relative overflow-hidden"
       >
-        <div className="absolute top-0 left-0 w-full h-4 bg-[#040823]"></div>
+        <div className="absolute top-0 left-0 w-full h-4 bg-[#4B577E]"></div>
         
-        <h2 className="text-3xl md:text-4xl font-black uppercase mb-2 mt-4 text-[#040823]">¡Registro Exitoso!</h2>
+        <h2 className="text-3xl md:text-4xl font-black uppercase mb-2 mt-4 text-[#4B577E]">¡Registro Exitoso!</h2>
         <p className="text-gray-500 font-bold uppercase text-sm mb-8 tracking-widest">Taller Integrado UV 2026</p>
         
         <div className="border-4 border-gray-500 p-6 mb-8 bg-gray-50">
           <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Tu Código de Seguimiento</p>
-          <p className="text-5xl md:text-6xl font-mono font-black tracking-tighter text-[#040823]">{code}</p>
+          <p className="text-5xl md:text-6xl font-mono font-black tracking-tighter text-[#4B577E]">{code}</p>
         </div>
         
         <div className="text-left space-y-4 border-t-4 border-gray-200 pt-8 mt-8">
@@ -58,7 +58,7 @@ export default function Success({ code, formData, onHome }: Props) {
           {formData.type === 'grupal' && (
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Tipo</p>
-              <p className="font-bold text-lg uppercase">Trabajo Grupal ({formData.members.length + 1} integrantes)</p>
+              <p className="font-bold text-lg uppercase">Maqueta/modelo Grupal ({formData.members.length + 1} integrantes)</p>
             </div>
           )}
         </div>
@@ -71,7 +71,7 @@ export default function Success({ code, formData, onHome }: Props) {
       <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full max-w-md">
         <button 
           onClick={handleDownload}
-          className="flex-1 bg-[#040823] text-white px-6 py-4 font-black uppercase hover:opacity-80 transition-opacity flex items-center justify-center gap-2 border-4 border-transparent"
+          className="flex-1 bg-[#4B577E] text-white px-6 py-4 font-black uppercase hover:opacity-80 transition-opacity flex items-center justify-center gap-2 border-4 border-transparent"
         >
           <Download className="w-5 h-5" /> Descargar 
         </button>
