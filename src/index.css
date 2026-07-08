@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+  --font-mono: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+}
