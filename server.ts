@@ -36,32 +36,58 @@ db.exec(`
     projectName TEXT NOT NULL,
     projectDescription TEXT NOT NULL,
     materials TEXT NOT NULL,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    type TEXT DEFAULT "individual",
+    members TEXT DEFAULT "[]",
+    rut TEXT DEFAULT ""
   )
 `);
+try {
+  db.exec('ALTER TABLE submissions ADD COLUMN type TEXT DEFAULT "individual"');
+} catch (e) {}
+try {
+  db.exec('ALTER TABLE submissions ADD COLUMN members TEXT DEFAULT "[]"');
+} catch (e) {}
+
+
+const prefixes = [
+  'TI11A', 'TI11B', 'TI11C', 'TI11D', 'TI12A',
+  'TIL21A', 'TIL21B', 'TIC21A', 'TIC21B', 'TIT21A', 'TIT21B', 'LCT21C',
+  'TFC22A', 'TFC22B',
+  'TIL31A', 'TIL31B', 'TIC31A', 'TIC31B', 'TIT31A', 'TIT31B',
+  'TFC32A', 'TFC32B'
+];
 
 try {
-  db.exec('ALTER TABLE submissions ADD COLUMN rut TEXT DEFAULT ""');
+  const countStmt = db.prepare('SELECT COUNT(*) as count FROM submissions');
+  const countRow = countStmt.get() as { count: number };
+  if (countRow.count === 0 || countRow.count === 1) { // 1 is from the test we just did
+    console.log('Seeding database with pre-allocated codes...');
+    const insertStmt = db.prepare(`
+      INSERT OR IGNORE INTO submissions (code, type, members, rut, firstName, middleName, lastName, secondLastName, email, workshop, projectName, projectDescription, materials)
+      VALUES (?, 'individual', '[]', '', '', '', '', '', '', '', '', '', '')
+    `);
+    
+    db.transaction(() => {
+      for (const prefix of prefixes) {
+        for (let i = 1; i <= 40; i++) {
+          const code = `${prefix}${i.toString().padStart(2, '0')}`;
+          insertStmt.run(code);
+        }
+      }
+    })();
+    console.log('Seeding complete.');
+  }
 } catch (e) {
-  // Column might already exist
+  console.error('Error seeding DB:', e);
 }
-
-// Set up Nodemailer transporter (for preview, we will log if not configured)
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  auth: {
-    user: process.env.SMTP_USER || 'ethereal.user@ethereal.email',
-    pass: process.env.SMTP_PASS || 'ethereal-pass',
-  },
-});
 
 function getPrefixForWorkshop(workshop: string): string {
   if (workshop.includes('TI11 - 1A')) return 'TI11A';
   if (workshop.includes('TI11 - 1B')) return 'TI11B';
   if (workshop.includes('TI11 - 1C')) return 'TI11C';
   if (workshop.includes('TI11 - 1D')) return 'TI11D';
-  if (workshop.includes('TI12 - U')) return 'TI12A';
+  if (workshop.includes('TI12 —')) return 'TI12A';
   
   if (workshop.includes('TIL21 - 1A')) return 'TIL21A';
   if (workshop.includes('TIL21 - 1B')) return 'TIL21B';
@@ -88,6 +114,8 @@ function getPrefixForWorkshop(workshop: string): string {
 app.post('/api/submissions', async (req, res) => {
   try {
     const {
+      type = 'individual',
+      members = '[]',
       rut,
       firstName,
       middleName,
@@ -101,18 +129,26 @@ app.post('/api/submissions', async (req, res) => {
     } = req.body;
 
     const prefix = getPrefixForWorkshop(workshop);
-    const countQuery = db.prepare('SELECT COUNT(*) as count FROM submissions WHERE code LIKE ?');
-    const countResult = countQuery.get(`${prefix}%`) as { count: number };
-    const nextNum = (countResult.count + 1).toString().padStart(2, '0');
-    const code = `${prefix}${nextNum}`;
+
+    
+    const findStmt = db.prepare(`SELECT code FROM submissions WHERE code LIKE ? AND email = '' ORDER BY code ASC LIMIT 1`);
+    const row = findStmt.get(`${prefix}%`) as { code: string } | undefined;
+    
+    if (!row) {
+      return res.status(400).json({ error: 'No hay cupos disponibles para esta sección.' });
+    }
+    
+    const code = row.code;
 
     const stmt = db.prepare(`
-      INSERT INTO submissions (code, rut, firstName, middleName, lastName, secondLastName, email, workshop, projectName, projectDescription, materials)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      UPDATE submissions 
+      SET type = ?, members = ?, rut = ?, firstName = ?, middleName = ?, lastName = ?, secondLastName = ?, email = ?, workshop = ?, projectName = ?, projectDescription = ?, materials = ?, createdAt = CURRENT_TIMESTAMP
+      WHERE code = ?
     `);
-
+    
     stmt.run(
-      code,
+      type,
+      members,
       rut,
       firstName,
       middleName || '',
@@ -122,29 +158,11 @@ app.post('/api/submissions', async (req, res) => {
       workshop,
       projectName,
       projectDescription,
-      materials
+      materials,
+      code
     );
 
-    // Send email
-    let emailSent = false;
-    try {
-      if (process.env.SMTP_HOST) {
-        await transporter.sendMail({
-          from: '"Taller Integrado UV" <noreply@estudiantes.uv.cl>',
-          to: email,
-          subject: 'Código de Confirmación - Taller Integrado',
-          text: `Hola ${firstName},\n\nTu formulario ha sido recibido con éxito. Tu código de confirmación es: ${code}\n\nSaludos,\nEquipo Taller Integrado UV.`,
-        });
-        emailSent = true;
-      } else {
-        console.log(`[Email Mock] Would send email to ${email} with code ${code}`);
-        emailSent = true;
-      }
-    } catch (emailError) {
-      console.error('Failed to send email:', emailError);
-    }
-
-    res.json({ success: true, code, emailSent });
+    res.json({ success: true, code });
   } catch (error) {
     console.error('Error submitting form:', error);
     res.status(500).json({ error: 'Failed to submit form' });
@@ -153,7 +171,7 @@ app.post('/api/submissions', async (req, res) => {
 
 app.get('/api/submissions/export', (req, res) => {
   try {
-    const stmt = db.prepare('SELECT * FROM submissions ORDER BY createdAt DESC');
+    const stmt = db.prepare('SELECT * FROM submissions ORDER BY code ASC');
     const rows = stmt.all();
 
     const csv = Papa.unparse(rows);
@@ -169,14 +187,14 @@ app.get('/api/submissions/export', (req, res) => {
 
 app.post('/api/submissions/login', (req, res) => {
   try {
-    const { code, email } = req.body;
-    const stmt = db.prepare('SELECT * FROM submissions WHERE code = ? AND email = ?');
-    const row = stmt.get(code, email);
+    const { rut, email } = req.body;
+    const stmt = db.prepare('SELECT * FROM submissions WHERE rut = ? AND email = ?');
+    const row = stmt.get(rut, email);
     
     if (row) {
       res.json({ success: true, submission: row });
     } else {
-      res.status(404).json({ error: 'No se encontró un registro con ese código y correo.' });
+      res.status(404).json({ error: 'No se encontró un registro con ese RUT y correo.' });
     }
   } catch (error) {
     console.error('Error in login:', error);
@@ -184,16 +202,41 @@ app.post('/api/submissions/login', (req, res) => {
   }
 });
 
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === 'campos' && password === 'acceso') {
+    res.json({ success: true, token: 'admin-token-valid' });
+  } else {
+    res.status(401).json({ error: 'Credenciales inválidas' });
+  }
+});
+
+app.get('/api/admin/submissions', (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader !== 'Bearer admin-token-valid') {
+      return res.status(401).json({ error: 'No autorizado' });
+    }
+
+    const stmt = db.prepare('SELECT * FROM submissions ORDER BY createdAt DESC');
+    const rows = stmt.all();
+    res.json({ success: true, submissions: rows });
+  } catch (error) {
+    console.error('Error fetching submissions for admin:', error);
+    res.status(500).json({ error: 'Error al obtener registros' });
+  }
+});
+
 app.post('/api/submissions/recover', (req, res) => {
   try {
-    const { email } = req.body;
-    const stmt = db.prepare('SELECT code FROM submissions WHERE email = ?');
-    const rows = stmt.all(email) as { code: string }[];
+    const { email, rut } = req.body;
+    const stmt = db.prepare('SELECT code FROM submissions WHERE email = ? AND rut = ?');
+    const rows = stmt.all(email, rut) as { code: string }[];
     
     if (rows.length > 0) {
       res.json({ success: true, code: rows[rows.length - 1].code });
     } else {
-      res.status(404).json({ error: 'No se encontraron registros con ese correo.' });
+      res.status(404).json({ error: 'No se encontraron registros con ese correo y RUT.' });
     }
   } catch (error) {
     console.error('Error in recover:', error);
@@ -205,6 +248,8 @@ app.put('/api/submissions/:code', (req, res) => {
   try {
     const { code } = req.params;
     const {
+      type = 'individual',
+      members = '[]',
       rut,
       firstName,
       middleName,
@@ -219,11 +264,12 @@ app.put('/api/submissions/:code', (req, res) => {
 
     const stmt = db.prepare(`
       UPDATE submissions
-      SET rut = ?, firstName = ?, middleName = ?, lastName = ?, secondLastName = ?, email = ?, workshop = ?, projectName = ?, projectDescription = ?, materials = ?
+      SET type = ?, members = ?, rut = ?, firstName = ?, middleName = ?, lastName = ?, secondLastName = ?, email = ?, workshop = ?, projectName = ?, projectDescription = ?, materials = ?
       WHERE code = ?
     `);
-
     const result = stmt.run(
+      type,
+      members,
       rut,
       firstName,
       middleName || '',
@@ -236,7 +282,6 @@ app.put('/api/submissions/:code', (req, res) => {
       materials,
       code
     );
-
     if (result.changes > 0) {
       res.json({ success: true, code });
     } else {
